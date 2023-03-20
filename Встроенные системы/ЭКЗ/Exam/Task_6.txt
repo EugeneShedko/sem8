@@ -1,0 +1,83 @@
+#include <LiquidCrystal.h>
+
+#define TRIG_PIN 6
+#define ECHO_PIN 7
+
+#define CONTROL_STEP 10
+#define TIME_STEP 1000
+#define MAX_DISTANCE 200
+
+#define MIN_CM 3
+#define MAX_CM 336
+#define COUNT_OF_DOTS 16*5
+
+// RS E DB5 DB6 DB7 DB8
+LiquidCrystal lcd(13, 12, 11, 10, 9, 8);
+
+byte stage_1[8] = {B10000,B10000,B10000,B10000,B10000,B10000,B10000,B10000};
+byte stage_2[8] = {B11000,B11000,B11000,B11000,B11000,B11000,B11000,B11000};
+byte stage_3[8] = {B11100,B11100,B11100,B11100,B11100,B11100,B11100,B11100};
+byte stage_4[8] = {B11110,B11110,B11110,B11110,B11110,B11110,B11110,B11110};
+byte stage_5[8] = {B11111,B11111,B11111,B11111,B11111,B11111,B11111,B11111};
+
+int duration, cm, lastcm;
+
+long microsecondsToCentimeters(long microseconds)
+{
+  return microseconds / 29 / 2;
+}
+
+void printStage(int x, int y, int stage) {
+  lcd.setCursor(x, y);
+  switch (stage) {
+    case 1: lcd.print("\1"); break;
+    case 2: lcd.print("\2"); break;
+    case 3: lcd.print("\3"); break;
+    case 4: lcd.print("\4"); break;
+    case 5: lcd.print("\5"); break;
+  }
+}
+
+void setup()
+{
+  lcd.createChar(1, stage_1);
+  lcd.createChar(2, stage_2);
+  lcd.createChar(3, stage_3);
+  lcd.createChar(4, stage_4);
+  lcd.createChar(5, stage_5);
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+  lcd.begin(16, 2);
+  Serial.begin(9600);
+}
+
+void loop()
+{
+  delay(50);
+  
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  
+  duration = pulseIn(ECHO_PIN, HIGH);
+  
+  cm = microsecondsToCentimeters(duration);
+  
+  if (lastcm != cm) {
+    lastcm = cm;
+    int displayLevel = cm * COUNT_OF_DOTS / (MAX_CM - MIN_CM);
+    
+    lcd.clear();
+    for (int i = 0; i < 16; i++) 
+    {
+      if (displayLevel <= 0) break;
+      
+      int printLevel = displayLevel >= 5 ? 5 : displayLevel;
+      displayLevel -= 5;
+      
+      printStage(i, 0, printLevel);
+      printStage(i, 1, printLevel);
+    }
+  }
+}

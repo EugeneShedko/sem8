@@ -1,0 +1,55 @@
+#define TRIG_PIN 12
+#define ECHO_PIN 13
+
+#define LAMP_2_PIN 10
+#define LAMP_1_PIN 9
+
+#define ALERT_1_DISTANCE 100
+#define ALERT_2_DISTANCE 200
+#define STEP_TIME 100
+
+int duration, cm;
+
+long microsecondsToCentimeters(long microseconds)
+{
+  return microseconds / 29 / 2;
+}
+
+void setup()
+{
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+  
+  pinMode(LAMP_1_PIN, OUTPUT);
+  pinMode(LAMP_2_PIN, OUTPUT);
+  
+  Serial.begin(9600);
+}
+
+void loop()
+{
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  
+  duration = pulseIn(ECHO_PIN, HIGH);
+  if (duration == 0) return;
+  
+  cm = microsecondsToCentimeters(duration);
+  
+  if (cm > ALERT_1_DISTANCE && cm <= ALERT_2_DISTANCE) {
+    analogWrite(LAMP_1_PIN, 255);
+    analogWrite(LAMP_2_PIN, 255);
+  }
+  else if (cm <= ALERT_1_DISTANCE) {
+  	analogWrite(LAMP_1_PIN, 255);
+    analogWrite(LAMP_2_PIN, 0);
+  }
+  else {
+  	analogWrite(LAMP_1_PIN, 0);
+    analogWrite(LAMP_2_PIN, 0);
+  }
+  
+  delay(STEP_TIME);
+}

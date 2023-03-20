@@ -1,0 +1,26 @@
+// include the library code:
+#include <LiquidCrystal.h>
+#include <Servo.h>
+
+// initialize the library with the numbers of the interface pins
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+Servo servo_9;
+int potpin = 0;
+int val = 0;
+
+void setup() {
+  Serial.begin(9600);
+  lcd.begin(16, 2);
+  servo_9.attach(9, 500, 2500);
+  pinMode(potpin, INPUT);
+}
+
+void loop() {
+  lcd.clear();
+  val = analogRead(potpin);
+  val = map(val, 0, 1023, 0, 179);
+  Serial.println(val);
+  lcd.print(val);
+  servo_9.write(val);
+  delay(15);
+}

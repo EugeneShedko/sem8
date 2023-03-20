@@ -1,0 +1,65 @@
+#include <Keypad.h> // Подключаем библиотеку
+
+#define BUZZER_PIN 13
+#define GREEN_PIN 12
+#define BLUE_PIN 2
+#define RED_PIN 3
+
+const byte ROWS = 4; // 4 строки
+const byte COLS = 4; // 4 столбца
+
+char keys[ROWS][COLS] = {
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+}; 
+
+byte rowPins[ROWS] = {11,10,9,8}; 
+byte colPins[COLS] = {7,6,5,4}; 
+
+Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
+
+void setup(){
+  pinMode(RED_PIN, OUTPUT);
+  pinMode(GREEN_PIN, OUTPUT);
+  pinMode(BLUE_PIN, OUTPUT);
+  Serial.begin(9600);
+  
+  
+}
+
+String password = "1C*521";
+String entered = "";
+
+void loop(){
+  analogWrite(RED_PIN, 0);
+  analogWrite(GREEN_PIN, 0);
+  analogWrite(BLUE_PIN, 255);
+  
+  char key = keypad.getKey();
+  if (key){
+    Serial.println(key);
+    tone(BUZZER_PIN, (int)key * 10, 300);
+    entered += key;
+  }
+  
+  if (entered.length() == password.length()) {
+    if (entered == password) {
+      Serial.println("!correct!");
+      analogWrite(RED_PIN, 0);
+      analogWrite(BLUE_PIN, 0);
+      analogWrite(GREEN_PIN, 255);
+      entered = "";
+      delay(2000);
+    }
+    else {
+      Serial.println("incorrect");
+      analogWrite(RED_PIN, 255);
+      analogWrite(BLUE_PIN, 0);
+      analogWrite(GREEN_PIN, 0);
+      entered = "";
+      delay(2000);
+    }
+  }
+}

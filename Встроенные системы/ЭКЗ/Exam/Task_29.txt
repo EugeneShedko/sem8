@@ -1,0 +1,41 @@
+// include the library code:
+#include <Servo.h>
+
+Servo servo_9;
+Servo servo_8;
+
+int potpin9 = 0;
+int potpin8 = 1;
+
+int val9 = 0;
+int val8 = 0;
+
+int led = 13;
+
+void setup() {
+  Serial.begin(9600);
+  servo_9.attach(9, 500, 2500);
+  servo_8.attach(8, 500, 2500);
+  pinMode(potpin9, INPUT);
+  pinMode(potpin8, INPUT);
+  pinMode(led, OUTPUT);
+}
+
+void loop() {
+  val9 = analogRead(potpin9);
+  val9 = map(val9, 0, 1023, 0, 179);
+  Serial.println(val9);
+  servo_9.write(val9);
+  
+  val8 = analogRead(potpin8);
+  val8 = map(val8, 0, 1023, 0, 179);
+  Serial.println(val8);
+  servo_8.write(val8);
+  
+  if(val9==val8)
+  	digitalWrite(led, HIGH);
+  else
+  	digitalWrite(led, LOW);
+
+  delay(25);
+}

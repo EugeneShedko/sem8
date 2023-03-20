@@ -1,0 +1,89 @@
+#include <IRremote.h>
+#include <Servo.h>
+long button0 = 16593103;
+long button1 = 16582903;
+long button2 = 16615543;
+long button3 = 16599223;
+long button4 = 16591063;
+long button5 = 16623703;
+long button6 = 16607383;
+long button7 = 16586983;
+long button8 = 16619623;
+long button9 = 16603303;
+long buttonPlayStop = 16621663;
+  
+int RECV_PIN = 10; // определяем пин для приемника
+long get; // 4 байта до 4 млрд значений
+IRrecv irrecv(RECV_PIN); // объект приемника
+decode_results results; // регистрируем декодер
+
+String angleStr = "";
+int angle = 0;
+
+int pos = 0;
+Servo servo_9;
+
+void setup()
+{
+  Serial.begin(9600); // включаем вывод информации на экран
+  irrecv.enableIRIn(); // включаем приемник
+  servo_9.attach(9, 500, 2500);
+  pinMode(13, OUTPUT);
+}
+
+void loop()
+{
+  if (irrecv.decode(&results)){ // проверяем был ли принят результат
+    get = results.value; // получем значение свойства value объекта results
+    //Serial.println(get, DEC); // выводим полученный код на экран
+    
+    if(get == button1) {
+      angleStr = angleStr + 1;
+    }
+    if(get == button2) {
+      angleStr = angleStr + 2;
+    }
+    if(get == button3) {
+      angleStr = angleStr + 3;
+    }
+    if(get == button4) {
+      angleStr = angleStr + 4;
+    }
+    if(get == button5) {
+      angleStr = angleStr + 5;
+    }
+    if(get == button6) {
+      angleStr = angleStr + 6;
+    }
+    if(get == button7) {
+      angleStr = angleStr + 7;
+    }
+    if(get == button8) {
+      angleStr = angleStr + 8;
+    }
+    if(get == button9) {
+      angleStr = angleStr + 9;
+    }
+    if(get == button0) {
+      angleStr = angleStr + 0;
+    }
+    if(get == buttonPlayStop) {
+        Serial.println(angleStr);
+    	for (pos = 0; pos <= angleStr.toInt(); pos += 1) {
+        // tell servo to go to position in variable 'pos'
+        servo_9.write(pos);
+        // wait 15 ms for servo to reach the position
+        delay(15); // Wait for 15 millisecond(s)
+    	}
+    	for (pos = angleStr.toInt(); pos >= 0; pos -= 1) {
+      	// tell servo to go to position in variable 'pos'
+      	servo_9.write(pos);
+      	// wait 15 ms for servo to reach the position
+      	delay(15); // Wait for 15 millisecond(s)
+    	}
+      angleStr="";
+    }
+    irrecv.resume(); // говорим приемнику что данные обработаны
+  }
+  
+}

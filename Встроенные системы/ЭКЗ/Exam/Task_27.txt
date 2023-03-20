@@ -1,0 +1,37 @@
+// C++ code
+//
+#include <Servo.h>
+Servo servo_2;
+int fr;
+int brightness;
+void setup()
+{
+	pinMode(3, OUTPUT);
+  	pinMode(A1, INPUT);
+  	servo_2.attach(2, 500, 2500);
+  	servo_2.write(0);
+}
+
+void loop()
+{
+  fr =analogRead(A1);
+  if(fr){
+  	servo_2.write(0);
+    analogWrite(3, 255);
+    delay(150);
+  	analogWrite(3, 0); 
+    delay(150);
+  	analogWrite(3, 255);
+    delay(150);
+    analogWrite(3, 0); 
+    delay(2000);
+  }
+  else{
+    servo_2.write(180);
+    analogWrite(3, 255);
+    delay(150);
+    analogWrite(3, 0); 
+    delay(2000);
+  }
+  delay(15);
+}

@@ -1,0 +1,53 @@
+#define PUSHBYTE_PIN 13 // пин данных (англ. data)
+#define CLOSEGATE_PIN 12 // пин такта (англ. clock)
+#define SINCHRO_PIN 11 // пин строба (англ. latch)
+#define BUTTON_PIN 10
+#define BUZZER_PIN 9 // пин с пищалкой
+
+#define STEP 2000
+
+byte segments[10] = {
+ 0b01111101, 0b00100100, 0b01111010, 0b01110110, 0b00100111, 
+ 0b01010111, 0b01011111, 0b01100100, 0b01111111, 0b01110111
+};
+
+int timer = 0;
+long lastMiliSeconds = -STEP;
+
+bool btnWasUp = true;
+bool stopped = false;
+
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(PUSHBYTE_PIN, OUTPUT);
+  pinMode(CLOSEGATE_PIN, OUTPUT);
+  pinMode(SINCHRO_PIN, OUTPUT);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+}
+
+void loop()
+{
+  if (!digitalRead(BUTTON_PIN))
+  {
+    if (btnWasUp) {
+    	stopped = !stopped;
+    }
+    btnWasUp = false;
+  }
+  else btnWasUp = true;
+  
+  if (millis() - lastMiliSeconds > STEP && !stopped)
+  {
+  	lastMiliSeconds = (millis() / 1000) * 1000;
+
+    digitalWrite(CLOSEGATE_PIN, LOW);
+    shiftOut(PUSHBYTE_PIN, SINCHRO_PIN, LSBFIRST, segments[timer]);
+    if (timer == 9)
+      tone(BUZZER_PIN, 2000, 1000);
+    digitalWrite(CLOSEGATE_PIN, HIGH);
+
+    timer = (timer + 1) % 10;
+  }
+  delay(100);
+}

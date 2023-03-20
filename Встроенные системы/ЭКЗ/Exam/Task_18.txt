@@ -1,0 +1,97 @@
+#define PUSHBYTE_PIN 13 // пин данных (англ. data)
+#define CLOSEGATE_PIN 12 // пин такта (англ. clock)
+#define SINCHRO_PIN 11 // пин строба (англ. latch)
+
+#define BUTTON_PIN_99 2
+#define BUTTON_PIN_0 3
+#define BUTTON_PIN_STOP 4
+#define BUTTON_PIN_RESET 5
+#define BUTTON_PIN_DOUBLE 6
+
+
+byte segments[10] = {
+ 0b01111101, 0b00100100, 0b01111010, 0b01110110, 0b00100111, 
+ 0b01010111, 0b01011111, 0b01100100, 0b01111111, 0b01110111
+};
+byte reset = 0b00000010;
+
+int timer = 0;
+bool start99 = 0;
+bool start0 = 0;
+int step = 0;
+int doubleDelay = 0;
+
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(PUSHBYTE_PIN, OUTPUT);
+  pinMode(CLOSEGATE_PIN, OUTPUT);
+  pinMode(SINCHRO_PIN, OUTPUT);
+  pinMode(BUTTON_PIN_0, INPUT_PULLUP);
+  pinMode(BUTTON_PIN_99, INPUT_PULLUP);
+  pinMode(BUTTON_PIN_STOP, INPUT_PULLUP);
+  pinMode(BUTTON_PIN_RESET, INPUT_PULLUP);
+  pinMode(BUTTON_PIN_DOUBLE, INPUT_PULLUP);
+}
+
+void loop()
+{
+  if (!digitalRead(BUTTON_PIN_STOP)){
+  	step = 0;
+    start0 = 0;
+    start99 = 0;
+  }
+  if(!digitalRead(BUTTON_PIN_DOUBLE))
+    doubleDelay = 1;
+    
+  if(!digitalRead(BUTTON_PIN_99) && !start0)
+    start99 = 1;
+  if(!digitalRead(BUTTON_PIN_0) && !start99)
+    start0 = 1;
+  if(start0){
+    step = 99 - doubleDelay;
+    int dozen = timer / 10;
+    int unit = timer % 10;
+
+    Serial.print(dozen);
+    Serial.println(unit);
+
+    digitalWrite(CLOSEGATE_PIN, LOW);
+    shiftOut(PUSHBYTE_PIN, SINCHRO_PIN, LSBFIRST, segments[dozen]);
+    shiftOut(PUSHBYTE_PIN, SINCHRO_PIN, LSBFIRST, segments[unit]);
+    digitalWrite(CLOSEGATE_PIN, HIGH);
+
+    timer = (timer + step) % 100;
+
+  }
+  if(start99){
+    step = 1 + doubleDelay;
+    int dozen = timer / 10;
+    int unit = timer % 10;
+
+    Serial.print(dozen);
+    Serial.println(unit);
+
+    digitalWrite(CLOSEGATE_PIN, LOW);
+    shiftOut(PUSHBYTE_PIN, SINCHRO_PIN, LSBFIRST, segments[dozen]);
+    shiftOut(PUSHBYTE_PIN, SINCHRO_PIN, LSBFIRST, segments[unit]);
+    digitalWrite(CLOSEGATE_PIN, HIGH);
+
+    timer = (timer + step)%100;
+
+  }
+  if(!digitalRead(BUTTON_PIN_RESET)){
+    digitalWrite(CLOSEGATE_PIN, LOW);
+    shiftOut(PUSHBYTE_PIN, SINCHRO_PIN, LSBFIRST, reset);
+    shiftOut(PUSHBYTE_PIN, SINCHRO_PIN, LSBFIRST, reset);
+    digitalWrite(CLOSEGATE_PIN, HIGH);
+    timer = 0;
+    start0 = 0;
+    start99 = 0;
+    step = 0;
+    doubleDelay = 0;
+    
+  }
+  delay(500);
+
+}

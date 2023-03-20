@@ -1,0 +1,65 @@
+#include <LiquidCrystal.h>
+
+// RS E DB5 DB6 DB7 DB8
+LiquidCrystal lcd(13, 12, 11, 10, 9, 8);
+
+byte bukva_L[8] = {0x3, 0x7, 0x5, 0x5, 0xD, 0x9, 0x19};
+byte bukva_YO[8] = {B01010,B00000,B11111,B10000,B11111,B10000,B11111};
+byte bukva_Ya[8] = {B01111, B10001, B10001, B01111, B00101, B01001, B10001};
+
+//волк Лёня как то так
+String text = "BO\1K \1\2H\3 KAK-TO TAK";
+
+void setup()
+{
+  lcd.createChar(1, bukva_L);
+  lcd.createChar(2, bukva_YO);
+  lcd.createChar(3, bukva_Ya);
+  lcd.begin(16, 2);
+}
+
+int uTextPosition = text.length() - 1;
+int uDisplayPosition = 0;
+int lTextPosition = 0;
+int lDisplayPosition = 15;
+
+void printNextStep() {
+  if (uTextPosition >= 0) {
+    String sub = text.substring(uTextPosition);
+  	lcd.setCursor(0, 0);
+    lcd.print(sub);
+    uTextPosition--;
+  }
+  else if (uDisplayPosition <= 15) {
+    lcd.setCursor(uDisplayPosition, 0);
+    lcd.print(text);
+    uDisplayPosition++;
+  }
+  else {
+  	uTextPosition = text.length() - 1;
+    uDisplayPosition = 0;
+  }
+  
+  if (lDisplayPosition >= 0) {
+    lcd.setCursor(lDisplayPosition, 1);
+    lcd.print(text);
+    lDisplayPosition--;
+  }
+  else if (lTextPosition <= text.length() - 1) {
+    String sub = text.substring(lTextPosition);
+  	lcd.setCursor(0, 1);
+    lcd.print(sub);
+    lTextPosition++;
+  }
+  else {
+  	lTextPosition = 0;
+    lDisplayPosition = 15;
+  }
+}
+
+void loop()
+{
+  delay(500);
+  lcd.clear();
+  printNextStep();
+}

@@ -1,0 +1,83 @@
+#define PUSHBYTE_PIN 2 // пин данных (англ. data)
+#define CLOSEGATE_PIN 3 // пин такта (англ. clock)
+#define SINCHRO_PIN 4 // пин строба (англ. latch)
+
+#define BUTTON_G1_PIN A0
+#define BUTTON_G2_PIN A1
+#define BUTTON_G3_PIN A2
+
+#define B1 511 
+#define B2 341 
+#define B3 256 
+#define B4 205 
+#define B5 171
+
+#define VEL 15
+
+#define NONE -1
+#define HYPEN 10
+#define INCR 11
+
+byte segments[11] = {
+ 0b01111101, 0b00100100, 0b01111010, 0b01110110, 0b00100111, 
+ 0b01010111, 0b01011111, 0b01100100, 0b01111111, 0b01110111, 
+  0b00000010
+};
+
+void printNumber(int number) {
+  digitalWrite(CLOSEGATE_PIN, LOW);
+  shiftOut(PUSHBYTE_PIN, SINCHRO_PIN, LSBFIRST, segments[number]);  
+  digitalWrite(CLOSEGATE_PIN, HIGH);
+}
+
+int getInputId() {
+  int G1 = analogRead(BUTTON_G1_PIN);
+  int G2 = analogRead(BUTTON_G2_PIN);
+  int G3 = analogRead(BUTTON_G3_PIN);
+  
+  if (G1 > 0) {
+    if (B1 - VEL < G1 && G1 < B1 + VEL) return 0;
+    if (B2 - VEL < G1 && G1 < B2 + VEL) return 1;
+    if (B3 - VEL < G1 && G1 < B3 + VEL) return 2;
+    if (B4 - VEL < G1 && G1 < B4 + VEL) return 3;
+    if (B5 - VEL < G1 && G1 < B5 + VEL) return 4;
+  }
+  if (G2 > 0) {
+    if (B1 - VEL < G2 && G2 < B1 + VEL) return 5;
+    if (B2 - VEL < G2 && G2 < B2 + VEL) return 6;
+    if (B3 - VEL < G2 && G2 < B3 + VEL) return 7;
+    if (B4 - VEL < G2 && G2 < B4 + VEL) return 8;
+    if (B5 - VEL < G2 && G2 < B5 + VEL) return 9;
+  }
+  if (G3 > 0) {
+  	if (B1 - VEL < G3 && G3 < B1 + VEL) return HYPEN;
+    if (B2 - VEL < G3 && G3 < B2 + VEL) return INCR;
+  }
+  return NONE;
+}
+
+int current = HYPEN;
+
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(PUSHBYTE_PIN, OUTPUT);
+  pinMode(CLOSEGATE_PIN, OUTPUT);
+  pinMode(SINCHRO_PIN, OUTPUT);
+}
+
+void loop()
+{
+  delay(100);
+  
+  int input = getInputId();
+  
+  if (input == INCR && current != HYPEN) {
+    current = (current + 1) % 10;
+  }
+  else if (input != NONE && input != INCR) {
+  	current = input;
+  }
+  
+  printNumber(current);
+}

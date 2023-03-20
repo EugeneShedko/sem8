@@ -1,0 +1,77 @@
+#include <LiquidCrystal.h>
+
+#define TRIG_PIN 12
+#define ECHO_PIN 13
+
+#define RED_PIN 10
+#define GREEN_PIN 8
+#define BLUE_PIN 9
+
+#define MIN_CM 3
+#define MAX_CM 336
+
+int duration, cm, lastcm;
+
+long microsecondsToCentimeters(long microseconds)
+{
+  return microseconds / 29 / 2;
+}
+
+void setup()
+{
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+  
+  pinMode(RED_PIN, OUTPUT);
+  pinMode(GREEN_PIN, OUTPUT);
+  pinMode(BLUE_PIN, OUTPUT);
+  
+  Serial.begin(9600);
+}
+
+void loop()
+{
+  delay(50);
+  
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  
+  duration = pulseIn(ECHO_PIN, HIGH);
+  if (duration == 0) return;
+  
+  cm = microsecondsToCentimeters(duration);
+  
+  if (lastcm != cm) {
+    lastcm = cm;
+    int dl = (long)cm * (255 * 3) / (MAX_CM - MIN_CM);
+    Serial.print(dl);
+    Serial.print(" -> ");
+    
+    int red = 0, green = 0, blue = 0;
+    
+    if (dl > 255 * 2) {
+      Serial.println("blue");
+      blue = (dl - 255 * 2) % 256;
+    } 
+    else if (dl > 255) {
+      Serial.println("green");
+      green = (dl - 255) % 256;
+    }
+    else {
+      Serial.println("red");
+      red = dl % 256;
+    }
+    
+    Serial.print(red);
+    Serial.print(" ");
+    Serial.print(green);
+    Serial.print(" ");
+    Serial.println(blue);
+    
+    analogWrite(RED_PIN, red);
+    analogWrite(GREEN_PIN, green);
+    analogWrite(BLUE_PIN, blue);
+  }
+}

@@ -1,0 +1,62 @@
+#include <LiquidCrystal.h>
+
+#define TRIG_PIN 6
+#define ECHO_PIN 7
+
+#define CONTROL_STEP 10
+#define TIME_STEP 1000
+#define MAX_DISTANCE 200
+
+// RS E DB5 DB6 DB7 DB8
+LiquidCrystal lcd(13, 12, 11, 10, 9, 8);
+
+// Буква "И"
+byte bukva_I[8] = {B10001,B10011,B10011,B10101,B11001,B11001,B10001,B00000,};
+
+String santimetr = " CAHT\1METP";
+String santimetrov = " CAHT\1METPOB";
+String santimetra = " CAHT\1METPA";
+
+int duration, cm, lastcm;
+
+long microsecondsToCentimeters(long microseconds)
+{
+  return microseconds / 29 / 2;
+}
+
+void setup()
+{
+  lcd.createChar(1, bukva_I);
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+}
+
+void loop()
+{  
+  delay(50);
+  
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  
+  duration = pulseIn(ECHO_PIN, HIGH);
+  
+  cm = microsecondsToCentimeters(duration);
+  
+  if (lastcm != cm) {
+    lastcm = cm;
+    
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print(cm);
+  
+    int lastUnit = cm % 10;
+    if (lastUnit == 1)
+  	  lcd.print(santimetr);
+    else if (lastUnit == 2 || lastUnit == 3 || lastUnit == 4)
+  	  lcd.print(santimetra);
+    else
+      lcd.print(santimetrov);
+  }
+}

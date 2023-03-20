@@ -1,0 +1,41 @@
+#include <LiquidCrystal.h>
+
+#define CHARGE_PIN 7
+#define DISCHARGE_PIN 6
+#define ANALOG_PIN A0
+
+#define TIME_STEP 1000
+
+// RS E DB5 DB6 DB7 DB8
+LiquidCrystal lcd(13, 12, 11, 10, 9, 8);
+
+float resistorValue = 10000.0F;
+
+void setup() {
+  pinMode(CHARGE_PIN, OUTPUT);
+  pinMode(DISCHARGE_PIN, INPUT);
+  lcd.begin(16, 2);
+  Serial.begin(9600);
+}
+
+void loop()
+{
+  digitalWrite(CHARGE_PIN, HIGH);
+  long startTime = millis();
+  while(analogRead(ANALOG_PIN) < 648){}
+  long elapsedTime = millis() - startTime;
+  Serial.println(elapsedTime);
+  
+  int mcFarads = ((float)elapsedTime / resistorValue) * 1000;
+  lcd.setCursor(0, 0);
+  lcd.print(mcFarads);
+  lcd.print(" mcF");
+  
+  digitalWrite(CHARGE_PIN, LOW);
+  pinMode(DISCHARGE_PIN, OUTPUT);
+  digitalWrite(DISCHARGE_PIN, LOW);
+  while(analogRead(ANALOG_PIN) > 0){}
+  pinMode(DISCHARGE_PIN, INPUT);
+  
+  delay(TIME_STEP);
+}

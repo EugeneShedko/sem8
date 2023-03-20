@@ -1,0 +1,35 @@
+#define POT_PIN A0
+#define LED_PIN 10
+#define ENGINE_PIN 9
+
+#define THE_SIXTH 1023 - 1023 * 5 / 6
+#define VISINITY 25
+
+long lastRotate = 0;
+
+void setup()
+{
+  pinMode(LED_PIN, OUTPUT);
+  pinMode(ENGINE_PIN, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop()
+{
+  //delay(100); -- if you want to make simulation faster
+  
+  int val = analogRead(POT_PIN);
+  
+  if (val > THE_SIXTH - VISINITY && val < THE_SIXTH + VISINITY){
+    digitalWrite(LED_PIN, HIGH);
+  } else {
+  	digitalWrite(LED_PIN, LOW);
+  }
+  
+  if (millis() - lastRotate >= val * 2) {
+    lastRotate = millis();
+    digitalWrite(ENGINE_PIN, HIGH);
+    delay(75);
+    digitalWrite(ENGINE_PIN, LOW);
+  }
+}

@@ -1,0 +1,23 @@
+// include the library code:
+#include <LiquidCrystal.h>
+
+// initialize the library with the numbers of the interface pins
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+String text = "hello, world! hello, world! hello";
+void setup() {
+  // set up the LCD's number of columns and rows:
+  lcd.begin(16, 2);
+  // Print a message to the LCD.
+  lcd.print(text);
+  delay(2000);
+}
+
+void loop() {
+  for (int positionCounter = 0; positionCounter <text.length(); positionCounter++) {
+    // scroll one position left:
+    lcd.scrollDisplayRight();
+    // wait a bit:
+    delay(150);
+  }
+  setup();
+}
